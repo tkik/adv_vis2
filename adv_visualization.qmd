@@ -1,0 +1,345 @@
+---
+title: "Advanced visualization course"
+format:
+  html:
+    toc: true
+    toc-location: left
+    code-fold: true
+    code-tools: true
+---
+
+```{r}
+#|eval: false
+
+
+if (!require(tidyr)) {
+  install.packages("tidyr")
+}
+if (!require(dplyr)) {
+  install.packages("dplyr")
+}
+if (!require(readr)) {
+  install.packages("readr")
+}
+if (!require(ggplot2)) {
+  install.packages("ggplot2")
+}
+if (!require(ggsci)) {
+  install.packages("ggsci")
+}
+if (!require(pheatmap)) {
+  install.packages("pheatmap")
+}
+if (!require(ggalluvial)) {
+  install.packages("ggalluvial")
+}
+if (!require(ggalluvial)) {
+  install.packages("cowplot")
+}
+if (!require(ggalluvial)) {
+  install.packages("ggrepel")
+}
+if (!require(ggalluvial)) {
+  install.packages("ggpubr")
+}
+if (!require(ggalluvial)) {
+  install.packages("tibble")
+}
+
+
+
+```
+
+```{r}
+#| label: load-packages
+#| include: false
+#| warning: false
+#| message: false
+
+library(tidyr)
+library(dplyr)
+library(readr)
+library(plotly)
+library(ggplot2)
+library(ggsci)
+library(pheatmap)
+library(ggalluvial)
+
+
+
+```
+
+## How to make publication ready figures?
+
+1.  Selecting the type of visualization
+2.  Making the plots visually appealing
+    1.  ggplot2
+    2.  supporting packages: ggpubr, ggrepl
+    3.  Choosing and using palettes
+    4.  Arrangement: cowplot
+3.  Special types of plots:
+    1.  Heatmaps
+    2.  Alluvial plots
+    3.  Upset plots
+    4.  Genomic plots, circos plots
+
+Data source: [CBioPortal](https://www.cbioportal.org/), [TCGA, LGG](https://www.cbioportal.org/study/summary?id=lgg_tcga_pan_can_atlas_2018)
+
+```{r}
+#| warning: false
+
+
+LGG <- read.delim("data/lgg_tcga_pan_can_atlas_2018_clinical_data.tsv")
+```
+
+## Visualization types
+
+#### One variable, continuous data
+
+We would like to see, how the data is distributed in our study.
+
+```{r}
+#| warning: false
+
+ggplot(LGG) + 
+  geom_density(aes(Diagnosis.Age))+theme_bw()+ ggtitle("Density plot")+xlab("Age at diagnosis")
+
+ggplot(LGG) + 
+  geom_histogram(aes(Diagnosis.Age), fill="gold", color="black")+theme_bw()+ ggtitle("Histogram")+xlab("Age at diagnosis")
+
+ggplot(LGG) + 
+  geom_histogram(aes(Diagnosis.Age), bins = 10, fill="gold", color="black")+theme_bw()+ ggtitle("Histogram with diffierent bin size")+xlab("Age at diagnosis")
+
+
+
+```
+
+#### One variable, discrete data
+
+We would like to see, how the data is distributed in our study.
+
+```{r}
+#| warning: false
+
+ggplot(LGG) + 
+  geom_bar(aes(Race.Category))+theme_bw()+ ggtitle("Bar plot")
+
+LGG %>%
+  filter(!is.na(Race.Category)) %>%
+  mutate(categories="Race") %>%
+  ggplot() +
+  geom_bar(aes(x=categories,  fill=Race.Category)) + 
+  coord_flip() + 
+  theme_minimal() +
+  theme(aspect.ratio=0.2, axis.title.y = element_blank())+ 
+  ggtitle("Stacked bar plot")+
+  scale_fill_futurama(name="Race category")
+
+```
+
+#### Two variables, continuous x and y
+
+```{r}
+#| warning: false
+
+f <- ggplot(LGG, aes(x = Winter.Hypoxia.Score, y=Ragnum.Hypoxia.Score))
+
+f + geom_point(size=1.5)+ggtitle("Geom_point")+theme_bw()+xlab("Winter Hypoxia Score")+ylab("Ragnum Hypoxia Score")
+
+
+
+
+```
+
+#### Two variables, discrete x and y
+
+```{r}
+#| warning: false
+
+e <- LGG %>%
+  filter(!is.na(Subtype)) %>%
+ ggplot(aes(x = Subtype, y=MSI.MANTIS.Score))
+
+
+e +
+  geom_point()+ggtitle("Geom_point") +
+  theme_bw()+
+   scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant,  1p/19q codel")) + 
+    ylab("MSI Mantis Score")+
+   theme(axis.title.x = element_blank())
+
+e +
+  geom_jitter(width = 0.08)+ggtitle("Geom_jitter")+
+  theme_bw()+
+   scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant,  1p/19q codel")) + 
+    ylab("MSI Mantis Score")+
+   theme(axis.title.x = element_blank())
+
+
+e +
+  geom_boxplot()+ggtitle("Geom_boxplot")+
+  theme_bw()+
+   scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant,  1p/19q codel")) + 
+    ylab("MSI Mantis Score")+
+   theme(axis.title.x = element_blank())
+
+e +
+  geom_violin(fill="salmon")+ggtitle("Geom_violin")+
+  theme_bw()+
+   scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant,  1p/19q codel")) + 
+    ylab("MSI Mantis Score")+
+   theme(axis.title.x = element_blank())
+
+e +
+  geom_dotplot(binaxis = "y", stackdir =
+"center", binwidth = 1/500)+ggtitle("Geom_dotplot")+
+  theme_bw()+
+   scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant,  1p/19q codel")) + 
+    ylab("MSI Mantis Score")+
+   theme(axis.title.x = element_blank())
+
+e + geom_boxplot(width=0.4, fill="lightpink") + geom_jitter(width = 0.08, alpha=0.7, color="lightpink4") +
+  theme_bw()+
+   scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant,  1p/19q codel")) + 
+    ylab("MSI Mantis Score")+
+   theme(axis.title.x = element_blank())
+
+```
+
+#### discrete x , discrete y
+
+```{r}
+
+g <- LGG %>%
+  filter(!is.na(Subtype) & !is.na(Race.Category)) %>%
+  #count(Subtype, Race.Category) %>%
+ ggplot(aes(x = Subtype, y=Race.Category)) 
+
+g + geom_count(color="red4")+
+   theme_minimal()+
+   scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant,  1p/19q codel")) + 
+   scale_fill_material("blue", name="Count")+
+   theme(axis.title = element_blank(), axis.text.x = element_text(angle=45, hjust = 1), aspect.ratio = 3)
+
+
+
+ LGG %>%
+    filter(!is.na(Subtype) & !is.na(Race.Category)) %>%
+     count(Subtype, Race.Category) %>% 
+   ggplot(aes(x = Subtype, y=Race.Category)) +
+   geom_tile(aes(fill = n))+
+   theme_minimal()+
+   scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant,  1p/19q codel")) + 
+   scale_fill_material("blue", name="Count")+
+   theme(axis.title = element_blank(), axis.text.x = element_text(angle=45, hjust = 1))
+
+
+```
+
+### Multiple variables
+
+#### Multiple discrete variables with the same categories
+
+For example the change of categorical variables in multiple years. Use instead of pie chart.
+
+```{r}
+
+LGG %>%
+  filter(!is.na(Subtype)) %>%
+ggplot() +
+geom_bar(aes(x=Subtype,  fill=Cancer.Type.Detailed), width = 0.5, position = "fill", color="black") + coord_flip()  + theme_bw() + scale_fill_futurama(name="Cancer type")+ylab("Proportion")+theme(axis.title.y = element_blank(), panel.border = element_blank(), aspect.ratio = 0.8)+scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant,  1p/19q codel"))
+
+```
+
+#### Multiple continuous variables
+
+Example: Heatmap for gene expression values
+
+```{r}
+#| eval: false
+
+
+library(TCGAbiolinks)
+library(SummarizedExperiment)
+
+
+query <- GDCquery(
+    project = "TCGA-LGG",
+    data.category = "Transcriptome Profiling",
+    data.type = "Gene Expression Quantification", 
+    workflow.type = "STAR - Counts"
+)
+GDCdownload(query = query)
+data <- GDCprepare(query = query)
+saveRDS(data, "data/LGG_GE.RDS")
+
+ge1 <- data[order(rowSds(assay(data, "fpkm_uq_unstrand")), decreasing = T)[1:500],]
+ge1 <- assay(ge1, "fpkm_uq_unstrand")
+ge1 <- ge1+0.001
+ge1 <- log2(ge1)
+saveRDS(ge1, "data/LGG_GE_small_mat.RDS")
+
+
+```
+
+```{r}
+#| warning: false
+#| message: false
+#| 
+ge <- readRDS("data/LGG_GE_small_mat.RDS")
+
+
+pheatmap(ge[1:50,], scale = "row", show_rownames = F, show_colnames = F, colorRampPalette(c("navy", "white", "red"))(50))
+
+pheatmap(ge[1:50,], scale = "row", show_rownames = F, show_colnames = F, colorRampPalette(c("navy", "white", "red"))(50), annotation_col = LGG_anno[,c("Sex", "Cancer.Type.Detailed")])
+
+
+```
+
+Example II: Enrichment results
+
+```{r}
+
+
+```
+
+### Special types
+
+#### Upset plot
+
+Use UpSet plot instead of Venn Diagram!
+
+```{r}
+
+library(UpSetR)
+
+mutation_data <- matrix(sample(c(0,1), 10000, replace = T, prob = c(0.8, 0.2)), nrow=1000)
+colnames(mutation_data) <- c("TP53", "KMT2C", "KMT2D", "ARID1A", "PIK3CA", "PTEN", "EGFR", "ERBB2", "KRAS",  "BRAF")
+mutation_data <- as.data.frame(mutation_data)
+
+upset(mutation_data, nsets = 10, mb.ratio = c(0.55, 0.45), order.by = "freq")
+
+
+```
+
+#### Alluvial plot
+
+To visualize change over time.
+
+```{r}
+data(majors)
+#> pivot_wider(majors, names_from = semester, values_from = curriculum)
+
+majors$curriculum <- as.factor(majors$curriculum)
+ggplot(majors,
+       aes(x = semester, stratum = curriculum, alluvium = student,
+           fill = curriculum, label = curriculum)) +
+  scale_fill_brewer(type = "qual", palette = "Set2") +
+  geom_flow(stat = "alluvium", lode.guidance = "frontback",
+            color = "darkgray") +
+  geom_stratum() +
+  theme(legend.position = "bottom") +
+  ggtitle("student curricula across several semesters")
+
+
+```

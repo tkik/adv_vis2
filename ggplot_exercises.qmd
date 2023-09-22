@@ -1,0 +1,36 @@
+---
+title: "ggplot exercises"
+format:
+  html:
+    toc: true
+    toc-location: left
+    code-fold: true
+    code-tools: true
+---
+
+
+# Exercises
+
+1. Use the iris dataset.
+2. plot a dotplot using sepal.length and sepal.width
+3. Color the dots by Species
+4. Add linear regression curve for the whole dataset
+5. Add linear regression curve colored by species
+6. plot boxplots for sepal length, one for each species, with different color
+7. plot dots on the boxplot
+8. Change the colors to red, blue and green.
+9. change axis labels
+10 Flip the coordinates
+11. Change the theme to theme_bw
+
+```{r}
+
+data(iris)
+
+
+
+
+
+
+
+```
