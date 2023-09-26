@@ -24,10 +24,16 @@ format:
 11. Change the theme to theme_bw
 
 ```{r}
-
+library(ggplot2)
 data(iris)
-
-
+iris <- as.data.frame(iris)
+  ggplot(iris, aes(x=Sepal.Length, y=Sepal.Width, color=Species))+geom_point()+
+      geom_smooth(method = "lm", formula = y ~ x, se=T, level=0.95)
+  
+  ggplot(iris, aes(x=Species, y = Sepal.Length))+geom_boxplot(aes(color=Species))+
+    geom_jitter(aes(color=Species))+scale_color_manual(values=c("red", "blue", "green"))+xlab("Species all")+ylab("Sepal Length")+coord_flip()+theme_bw()
+  
+  
 
 
 

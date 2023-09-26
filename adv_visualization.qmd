@@ -244,10 +244,14 @@ For example the change of categorical variables in multiple years. Use instead o
 
 ```{r}
 
+
+shorten_char <- function(st){
+  
+}
 LGG %>%
   filter(!is.na(Subtype)) %>%
 ggplot() +
-geom_bar(aes(x=Subtype,  fill=Cancer.Type.Detailed), width = 0.5, position = "fill", color="black") + coord_flip()  + theme_bw() + scale_fill_futurama(name="Cancer type")+ylab("Proportion")+theme(axis.title.y = element_blank(), panel.border = element_blank(), aspect.ratio = 0.8)+scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant,  1p/19q codel"))
+geom_bar(aes(x=Subtype,  fill=Cancer.Type.Detailed), width = 0.5, position = "fill", color="black") + coord_flip()  + theme_bw() + scale_fill_futurama(name="Cancer type")+ylab("Proportion")+theme(axis.title.y = element_blank(), panel.border = element_blank(), aspect.ratio = 0.8)+scale_x_discrete(labels=c("LGG_IDHwt" = "IDH WT", "LGG_IDHmut-non-codel" = "IDH mutant, not \n 1p/19q codel", "LGG_IDHmut-codel" = "IDH mutant, \n 1p/19q codel"))
 
 ```
 

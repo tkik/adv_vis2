@@ -30,9 +30,10 @@ LGG <- read.delim("data/lgg_tcga_pan_can_atlas_2018_clinical_data.tsv")
 ge <- readRDS("data/LGG_GE_small_mat.RDS")
 
 colnames(ge) <- substr(colnames(ge), 1, 15)
+rownames(LGG) <- LGG$Sample.ID
 LGG_anno <- LGG[colnames(ge),]
 
-pheatmap(ge[1:50,], scale = "row", show_rownames = F, show_colnames = F, colorRampPalette(c("navy", "white", "red"))(50))
+pheatmap(ge[1:50,], scale = "row", show_rownames = F, show_colnames = F,  colorRampPalette(c("navy", "white", "red"))(50))
 
 pheatmap(ge[1:50,], scale = "row", show_rownames = F, show_colnames = F, colorRampPalette(c("navy", "white", "red"))(50), annotation_col = LGG_anno[,c("Sex", "Cancer.Type.Detailed")])
 
@@ -41,7 +42,32 @@ ann_colors = list(
     Sex = c(Male = "darkblue", Female = "firebrick"),
     Cancer.Type.Detailed = c(Astrocytoma = "#1B9E77", "Low-Grade Glioma (NOS)" = "#D95F02", Oligoastrocytoma = "#7570B3", Oligodendroglioma = "#E7298A")
 )
-pheatmap(ge[1:50,], scale = "row", show_rownames = F, show_colnames = F, colorRampPalette(c("navy", "white", "red"))(50), annotation_col = LGG_anno[,c("Sex", "Cancer.Type.Detailed")], annotation_colors = ann_colors)
+
+pheatmap(ge[1:50,], scale = "row", show_rownames = F, show_colnames = F, colorRampPalette(c("navy", "white", "red"))(50), annotation_col = LGG_anno[,c("Sex", "Cancer.Type.Detailed")], annotation_colors = ann_colors )
+
+#pdf("figures/heatmap.pdf", width = )
+p <- pheatmap::pheatmap(ge[1:50,], scale = "row", show_rownames = F, show_colnames = F, colorRampPalette(c("navy", "white", "red"))(50), annotation_col = LGG_anno[,c("Sex", "Cancer.Type.Detailed")], annotation_colors = ann_colors, cutree_cols=2,filename ="figures/heatmap.pdf")
+
+
+```
+
+```{r}
+library(ComplexHeatmap)
+
+ge_sc <- scale(t(ge[1:50,]))
+ge_sc <- t(ge_sc)
+
+Heatmap(ge_sc, show_row_names = F, show_column_names = F)
+
+
+ha = HeatmapAnnotation(df = LGG_anno[,c("Sex", "Cancer.Type.Detailed")],
+    col = list(
+    Sex = c(Male = "darkblue", Female = "firebrick"),
+    Cancer.Type.Detailed = c(Astrocytoma = "#1B9E77", "Low-Grade Glioma (NOS)" = "#D95F02", Oligoastrocytoma = "#7570B3", Oligodendroglioma = "#E7298A")
+)
+)
+
+Heatmap(ge_sc, show_row_names = F, show_column_names = F, top_annotation = ha, use_raster = )
 
 
 ```

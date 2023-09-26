@@ -79,8 +79,9 @@ Now add additional layers of information:
 
 ```{r}
 #| warning: false
-
-ggplot(LGG)+
+LGG %>%
+  filter(!is.na(Sex)) %>%
+ggplot()+
   geom_point(aes(x = Diagnosis.Age, y=MSI.MANTIS.Score, color=Sex))
 
 ```
@@ -92,6 +93,7 @@ Now add statistics:
 p <- ggplot(LGG,aes(x = Diagnosis.Age, y=MSI.MANTIS.Score))
 p +
   geom_point()+
+  #geom_smooth()
   stat_smooth(method = "lm", formula = y ~ x, se=T, level=0.95)
 #this can also be used as geom_smooth
 
@@ -174,7 +176,7 @@ LGG %>%
 
 LGG %>%
   filter(!is.na(Subtype)) %>%
- ggplot(aes(x = Subtype, y=MSI.MANTIS.Score))+
+  ggplot(aes(x = Subtype, y=MSI.MANTIS.Score))+
   geom_boxplot(width=0.4, fill="lightpink") + 
   geom_jitter(width = 0.08, alpha=0.7, color="lightpink4")
 
@@ -189,6 +191,10 @@ LGG %>%
 LGG %>%
   filter(!is.na(Subtype) & !is.na(Sex)) %>%
  ggplot() + geom_boxplot(aes(x = Subtype, y=MSI.MANTIS.Score, fill=Sex),width=0.4) + geom_jitter(aes(x = Subtype, y=MSI.MANTIS.Score), width = 0.08, alpha=0.7, color="lightpink4")
+
+LGG %>%
+  filter(!is.na(Subtype) & !is.na(Sex)) %>%
+ ggplot(aes(x = Subtype, y=MSI.MANTIS.Score)) + geom_boxplot( aes(fill=Sex),width=0.4) + geom_jitter(width = 0.08, alpha=0.7, color="lightpink4")
 
 
 ```
@@ -206,7 +212,7 @@ ggplot(LGG,aes(x = Diagnosis.Age, y=MSI.MANTIS.Score))+
 ggplot(LGG,aes(x = Diagnosis.Age, y=MSI.MANTIS.Score))+
   geom_point(aes(color=Sex))+
   stat_smooth(method = "lm", formula = y ~ x, se=T, level=0.95) + 
-   scale_y_continuous(limits=c(0.2, 0.4))+
+   scale_y_continuous(name = "Score", limits=c(0.2, 0.4))+
   scale_x_continuous(name="Age of diagnosis", breaks = c(0,10,50,60,100), labels = c(0,10,50,60,100), limits = c(0,100), position = "top")
 
 ```
@@ -247,7 +253,7 @@ ggplot(aes(x = Diagnosis.Age, y=MSI.MANTIS.Score))+
   stat_smooth(method = "lm", formula = y ~ x, se=T, level=0.95) + 
    scale_color_brewer(palette = "Set1")+
   theme_bw()+
-  facet_wrap(~ Sex)
+  facet_wrap(~ Sex, nrow = 2, scales = "free_y")
  
 ```
 
@@ -283,7 +289,7 @@ LGG %>%
 p <- ggplot(LGG,aes(x = Diagnosis.Age, y=MSI.MANTIS.Score))+
   geom_point(aes(color=Sex))+
   stat_smooth(method = "lm", formula = y ~ x, se=T, level=0.95) + 
-   scale_color_brewer(palette = "Set2")
+  scale_color_brewer(palette = "Set2")
 
 p + theme_linedraw()
 ```
@@ -298,7 +304,14 @@ Specific theme elements can be overridden using `theme()`. For example:
 
 ```{r}
 p + theme_minimal() +
-  theme(text = element_text(color = "turquoise"))
+  theme( legend.position = "none" )
+           element_text(angle = 45, color = "turquoise")
+
+
+
+
+
+
 ```
 
 All theme options are documented in `?theme`.
@@ -311,6 +324,7 @@ You can create new themes, as in the following example:
 theme_new <- theme_bw() + theme(plot.background = element_rect(linewidth = 1, color = "blue", fill = "black"), text=element_text(size = 12, color = "aquamarine"), axis.text.y = element_text(colour = "purple"), axis.text.x = element_text(colour = "red"), panel.background = element_rect(fill = "pink"), strip.background = element_rect(fill = "orange"))
 
 p + theme_new
+
 ```
 
 ### Saving
@@ -321,7 +335,7 @@ p + theme_new
 p + theme_new
 ggsave(filename = "figures/nice_plot.pdf")
 g <- p + theme_new
-ggsave(g, filename = "figures/nice_plot.pdf", width = 5, height = 9)
+ggsave(g, filename = "figures/nice_plot_big.pdf", width = 5, height = 9)
 
 
 ```
@@ -346,7 +360,7 @@ p2 <- ggplot(LGG,aes(x = Diagnosis.Age, y=Aneuploidy.Score))+
 
 
 
-plot_grid(p1, p2, labels = c('A', 'B'), label_size = 12)
+plot_grid(p1, p2, labels = c('A', 'B'), label_size = 12, )
 plot_grid(p1, p2, labels = c('A', 'B'), label_size = 12, rel_widths = c(3,2))
 plot_grid(p1, p2, p2, labels = c('A', 'B', 'C'), label_size = 12, rel_widths = c(3,2,2), nrow = 2)
 
@@ -371,7 +385,7 @@ LGG %>%
   ggplot() +
   geom_bar(aes(x=categories,  fill=Race.Category), position = "dodge2")+
   scale_fill_manual(values = ggsci::pal_lancet()(4))
-
+ggsci::pal_lancet()(4)
 
 ```
 
@@ -386,6 +400,19 @@ ggplot(LGG[1:30,],aes(x = Diagnosis.Age, y=MSI.MANTIS.Score))+
   geom_point(aes(color=Sex))+geom_text_repel(aes(label=Patient.ID), size=3)
 
 ```
+
+```{r}
+
+e <- ggplot(LGG.sum, aes(x=Cancer.Type.Detailed, y=Aneuploidy.Score)) + 
+  geom_bar(stat="identity")
+LGG.sum$Cancer.Type.Detailed <- factor(LGG.sum$Cancer.Type.Detailed, levels = LGG.sum$Cancer.Type.Detailed[order(LGG.sum$Aneuploidy.Score, decreasing = T)])
+ggplot(LGG.sum, aes(x=Cancer.Type.Detailed, y=Aneuploidy.Score)) + 
+  geom_bar(stat="identity")
+
+ #mutate(name = fct_reorder(name, desc(val))
+
+```
+
 
 ## Nice plots with ggpubr
 
@@ -407,7 +434,7 @@ Histogram
 
 ```{r}
 ggplot(LGG) + 
-  geom_histogram(aes(Diagnosis.Age, fill="Sex"), color="black")+theme_bw()+ ggtitle("Histogram")+xlab("Age at diagnosis")
+  geom_histogram(aes(Diagnosis.Age, fill=Sex), color="black")+theme_bw()+ ggtitle("Histogram")+xlab("Age at diagnosis")
 
 gghistogram(LGG, x = "Diagnosis.Age",
    add = "mean", rug = TRUE,
@@ -417,7 +444,7 @@ gghistogram(LGG, x = "Diagnosis.Age",
 gghistogram(LGG, x = "Diagnosis.Age",
    add = "mean", rug = TRUE,
    color = "Sex", fill = "Sex",facet.by = "Cancer.Type.Detailed",
-   palette = pal_lancet()(2))
+   palette = pal_lancet()(2))+theme(text = element_text(colour = "blue"))
 
 
 ```
@@ -456,7 +483,7 @@ p + stat_compare_means(comparisons = my_comparisons)+ # Add pairwise comparisons
 p <- ggscatter(LGG[1:30,], x = "Diagnosis.Age", y = "MSI.MANTIS.Score",
    color = "Subtype", palette = c("#00AFBB", "#E7B800", "#FC4E07"),
    label = "Patient.ID", repel = TRUE)
-
+p
 p + theme(text=element_text(colour = "aquamarine"))
 
 ```
@@ -473,4 +500,5 @@ ge_t %>%
   rownames_to_column(var="Gene") %>%
 pivot_longer( cols = !Gene, names_to = "Patient.ID") %>%
 ggplot(aes(x=Patient.ID, y=Gene))+geom_tile(aes(fill=value))+theme(axis.text.x = element_blank(), axis.ticks.x = element_blank())
+
 ```
